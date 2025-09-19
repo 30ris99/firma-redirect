@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Reindirizzamento al Portale Firma</title>
+    <script>
+        // Assicurati che questo sia il tuo URL corretto che finisce con /exec
+        const webAppBaseUrl = "https://script.google.com/macros/s/AKfycbxJc19JSyyNkcKpGu4u-Y4sQNCyjYNQSHyBFWd820c/exec";
+        
+        const params = new URLSearchParams(window.location.search);
+        const folderId = params.get('folderId');
+        if (folderId) {
+            window.location.replace(`${webAppBaseUrl}?folderId=${folderId}`);
+        }
+    </script>
+</head>
+<body>
+    <p>Reindirizzamento in corso...</p>
+</body>
+</html>
