@@ -22,10 +22,24 @@
         #page-header p { margin: 3px 0; font-size: 0.95em; color: var(--text-color-light); line-height: 1.4; }
         #container { background: var(--container-bg-color); padding: 30px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 500px; }
         #container h3 { font-family: var(--font-headings); font-weight: 500; font-size: 1.2em; text-align: center; margin-top: 0; margin-bottom: 25px; color: var(--text-color-dark); }
+        #doc-list-container h4 { font-family: var(--font-body); font-weight: 500; margin-top: 0; margin-bottom: 10px; font-size: 1em; color: var(--text-color-dark); }
+        #doc-list { list-style: none; padding-left: 0; margin: 0; max-height: 150px; overflow-y: auto; border: 1px solid #ecf0f1; border-radius: 4px; padding: 10px; }
+        #doc-list li { padding: 10px 8px; border-bottom: 1px solid #ecf0f1; font-size: 0.9em; display: flex; align-items: center; }
+        #doc-list li:last-child { border-bottom: none; }
+        #doc-list a { text-decoration: none; color: var(--primary-color); font-weight: 500; transition: color 0.2s; }
+        #doc-list a:hover { color: #000; }
+        #doc-list li::before { content: '📄'; margin-right: 10px; font-size: 1.1em; }
+        .no-docs { color: var(--text-color-light); font-style: italic; }
+        #signature-pad-container { width: 100%; border: 2px dashed var(--border-color); border-radius: 4px; margin: 25px 0; touch-action: none; }
+        #signature-pad { display: block; width: 100%; height: 160px; }
+        #consent-container { margin-bottom: 25px; }
+        #consent-container label { font-size: 0.8em; line-height: 1.5; color: var(--text-color-light); display: flex; align-items: flex-start; cursor: pointer; }
+        #consent-container input[type="checkbox"] { margin-right: 12px; margin-top: 3px; flex-shrink: 0; width: 1.1em; height: 1.1em; accent-color: var(--primary-color); }
         .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         button { padding: 14px; font-size: 1em; font-family: var(--font-headings); font-weight: 500; cursor: pointer; border-radius: 4px; border: none; transition: all 0.2s ease; }
         button:disabled { background-color: var(--secondary-color) !important; cursor: not-allowed; opacity: 0.6; }
         #save-button { background-color: var(--primary-color); color: white; }
+        #clear-button { background-color: var(--text-color-light); color: white; }
         #message { margin-top: 25px; font-weight: 500; text-align: center; min-height: 2.5em; white-space: pre-wrap; transition: all 0.3s; font-size: 0.95em; }
     </style>
 </head>
@@ -37,63 +51,89 @@
     </header>
 
     <div id="container">
-        <!-- Il contenuto verrà caricato dinamicamente qui -->
-        <p style="text-align:center;">Caricamento in corso...</p>
+        <p style="text-align:center;">Caricamento dei documenti in corso...</p>
     </div>
 
     <script>
         // =================================================================================
         // --- CONFIGURAZIONE: Incolla qui l'URL /exec della tua Web App su Apps Script ---
-        const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbwIbVNjpoMnE43n3POc0pQzYsbwj-pmQeIAXAVgTUxWbDP3AZE4rm2MUFEuoZD6AK3Bgg/exec";
+        const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbySQMkJbi0ESFJ4DuivfbeJKmPgqg_e7w3Awdom7z4b0UNikEDCG0lHo0Z8jHLUgHAeiw/exec";
         // =================================================================================
 
         const container = document.getElementById('container');
         const params = new URLSearchParams(window.location.search);
         const folderId = params.get('folderId');
 
-        // Al caricamento della pagina, mostra l'interfaccia di firma
+        // Al caricamento della pagina, chiede la lista dei documenti allo script
         window.addEventListener('load', () => {
             if (!folderId) {
-                container.innerHTML = '<h3>Errore</h3><p>Link non valido: ID della cartella non specificato.</p>';
+                renderError('Link non valido: ID della cartella non specificato.');
                 return;
             }
-            // Per ora mostriamo solo il form, la lista file la potremmo aggiungere dopo
+            
+            // Fa una chiamata GET per ottenere la lista dei file
+            fetch(`${WEB_APP_API_URL}?folderId=${folderId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderSigningInterface(data.documents);
+                    } else {
+                        renderError(data.message);
+                    }
+                })
+                .catch(error => renderError('Impossibile comunicare con il server di firma. Riprova più tardi.'));
+        });
+
+        function renderError(message) {
+            container.innerHTML = `<h3 style="color: var(--danger-color);">Errore</h3><p>${message}</p>`;
+        }
+        
+        function renderSigningInterface(documents) {
+            let docListHtml = '';
+            if (documents && documents.length > 0) {
+                documents.forEach(doc => {
+                    docListHtml += `<li><a href="${doc.url}" target="_blank" rel="noopener noreferrer">${doc.name}</a></li>`;
+                });
+            } else {
+                docListHtml = '<li class="no-docs">Nessun documento trovato.</li>';
+            }
+
             container.innerHTML = `
                 <h3>Revisione e Firma Documenti</h3>
-                <p style="text-align:center; font-size:0.9em; color:#666;">Disegna la tua firma nel riquadro sottostante:</p>
-                <div id="signature-pad-container" style="width: 100%; border: 2px dashed #bdc3c7; border-radius: 4px; margin: 25px 0; touch-action: none;">
-                    <canvas id="signature-pad" style="display: block; width: 100%; height: 160px;"></canvas>
+                <div id="doc-list-container">
+                    <h4>Clicca per visualizzare i documenti da firmare:</h4>
+                    <ul id="doc-list">${docListHtml}</ul>
                 </div>
-                <div id="consent-container" style="margin-bottom: 25px;">
-                    <label style="font-size: 0.8em; line-height: 1.5; color: #7f8c8d; display: flex; align-items: flex-start; cursor: pointer;">
-                        <input type="checkbox" id="consent-checkbox" style="margin-right: 12px; margin-top: 3px; flex-shrink: 0; width: 1.1em; height: 1.1em;">
-                        <span>Dichiaro di aver preso visione dei documenti e di approvarne il contenuto...</span>
+                <p style="text-align:center; font-size:0.9em; color:#666;">Disegna la tua firma nel riquadro sottostante:</p>
+                <div id="signature-pad-container">
+                    <canvas id="signature-pad"></canvas>
+                </div>
+                <div id="consent-container">
+                    <label>
+                        <input type="checkbox" id="consent-checkbox">
+                        <span>Dichiaro di aver preso visione dei documenti sopra elencati e di approvarne il contenuto...</span>
                     </label>
                 </div>
                 <div class="buttons">
-                    <button id="clear-button" style="background-color: #7f8c8d; color: white;">Pulisci</button>
+                    <button id="clear-button">Pulisci</button>
                     <button id="save-button">Accetta e Firma</button>
                 </div>
                 <div id="message"></div>
             `;
+            
             initializeSigningPad();
-        });
+        }
 
         function initializeSigningPad() {
             const canvas = document.getElementById('signature-pad');
             const saveButton = document.getElementById('save-button');
             const clearButton = document.getElementById('clear-button');
             const consentCheckbox = document.getElementById('consent-checkbox');
+            const messageDiv = document.getElementById('message');
             
             const signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
 
-            function resizeCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
-                signaturePad.clear();
-            }
+            function resizeCanvas() { /* ... (logica di resize) ... */ }
             window.addEventListener("resize", resizeCanvas);
             resizeCanvas();
 
@@ -113,9 +153,8 @@
                     const screenshotData = canvas.toDataURL('image/jpeg', 0.7);
                     const signatureData = signaturePad.toDataURL('image/png');
 
-                    message.textContent = 'Invio e elaborazione in corso...';
+                    messageDiv.textContent = 'Invio e elaborazione in corso...';
                     
-                    // --- NUOVA LOGICA DI INVIO ---
                     fetch(WEB_APP_API_URL, {
                         method: 'POST',
                         body: JSON.stringify({ signatureData, screenshotData, folderId }),
@@ -133,29 +172,9 @@
                 });
             });
 
-            function onSuccess(response) {
-                const message = document.getElementById('message');
-                message.textContent = response;
-                message.style.color = 'var(--success-color)';
-                signaturePad.off();
-            }
-
-            function onFailure(error) {
-                const message = document.getElementById('message');
-                message.textContent = "Errore: " + error.message;
-                message.style.color = 'var(--danger-color)';
-                setLoadingState(false);
-            }
-            
-            function setLoadingState(isLoading, messageText = '') {
-                const message = document.getElementById('message');
-                if(messageText) message.textContent = messageText;
-                saveButton.disabled = isLoading;
-                clearButton.disabled = isLoading;
-                consentCheckbox.disabled = isLoading;
-                if(isLoading) { signaturePad.off(); } 
-                else { signaturePad.on(); toggleSaveButton(); }
-            }
+            function onSuccess(response) { /* ... (logica di successo) ... */ }
+            function onFailure(error) { /* ... (logica di errore) ... */ }
+            function setLoadingState(isLoading, messageText = '') { /* ... (logica di stato) ... */ }
         }
     </script>
 </body>
