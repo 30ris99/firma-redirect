@@ -30,8 +30,8 @@
         #doc-list a:hover { color: #000; }
         #doc-list li::before { content: '📄'; margin-right: 10px; font-size: 1.1em; }
         .no-docs { color: var(--text-color-light); font-style: italic; }
-        #signature-pad-container { width: 100%; border: 2px dashed var(--border-color); border-radius: 4px; margin: 25px 0; touch-action: none; }
-        #signature-pad { display: block; width: 100%; height: 160px; }
+        #signature-pad-container { width: 100%; border: 2px dashed var(--border-color); border-radius: 4px; margin: 25px 0; touch-action: none; position: relative; }
+        #signature-pad { display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; } /* Stile per il corretto scaling */
         #consent-container { margin-bottom: 25px; }
         #consent-container label { font-size: 0.8em; line-height: 1.5; color: var(--text-color-light); display: flex; align-items: flex-start; cursor: pointer; }
         #consent-container input[type="checkbox"] { margin-right: 12px; margin-top: 3px; flex-shrink: 0; width: 1.1em; height: 1.1em; accent-color: var(--primary-color); }
@@ -39,7 +39,6 @@
         button { padding: 14px; font-size: 1em; font-family: var(--font-headings); font-weight: 500; cursor: pointer; border-radius: 4px; border: none; transition: all 0.2s ease; }
         button:disabled { background-color: var(--secondary-color) !important; cursor: not-allowed; opacity: 0.6; }
         #save-button { background-color: var(--primary-color); color: white; }
-        #clear-button { background-color: var(--text-color-light); color: white; }
         #message { margin-top: 25px; font-weight: 500; text-align: center; min-height: 2.5em; white-space: pre-wrap; transition: all 0.3s; font-size: 0.95em; }
     </style>
 </head>
@@ -51,27 +50,21 @@
     </header>
 
     <div id="container">
+        <!-- Il contenuto verrà caricato dinamicamente qui -->
         <p style="text-align:center;">Caricamento dei documenti in corso...</p>
     </div>
 
     <script>
-        // =================================================================================
-        // --- CONFIGURAZIONE: Incolla qui l'URL /exec della tua Web App su Apps Script ---
         const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbySQMkJbi0ESFJ4DuivfbeJKmPgqg_e7w3Awdom7z4b0UNikEDCG0lHo0Z8jHLUgHAeiw/exec";
-        // =================================================================================
-
         const container = document.getElementById('container');
         const params = new URLSearchParams(window.location.search);
         const folderId = params.get('folderId');
 
-        // Al caricamento della pagina, chiede la lista dei documenti allo script
         window.addEventListener('load', () => {
             if (!folderId) {
                 renderError('Link non valido: ID della cartella non specificato.');
                 return;
             }
-            
-            // Fa una chiamata GET per ottenere la lista dei file
             fetch(`${WEB_APP_API_URL}?folderId=${folderId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -111,11 +104,12 @@
                 <div id="consent-container">
                     <label>
                         <input type="checkbox" id="consent-checkbox">
-                        <span>Dichiaro di aver preso visione dei documenti sopra elencati e di approvarne il contenuto...</span>
+                        <!-- MODIFICA 1: Ripristinata la dicitura completa e professionale -->
+                        <span>Dichiaro di aver preso visione dei documenti sopra elencati e di approvarne il contenuto. Comprendo che apporre la mia firma tramite questo strumento costituisce una manifestazione di volontà con efficacia giuridica ai sensi delle normative vigenti in materia di firma elettronica.</span>
                     </label>
                 </div>
                 <div class="buttons">
-                    <button id="clear-button">Pulisci</button>
+                    <button id="clear-button" style="background-color: #7f8c8d; color: white;">Pulisci</button>
                     <button id="save-button">Accetta e Firma</button>
                 </div>
                 <div id="message"></div>
@@ -131,11 +125,28 @@
             const consentCheckbox = document.getElementById('consent-checkbox');
             const messageDiv = document.getElementById('message');
             
-            const signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+            // --- MODIFICA 2: Impostazioni per spessore e precisione ---
+            const signaturePad = new SignaturePad(canvas, {
+                penColor: 'rgb(0, 0, 0)', // Colore del tratto
+                minWidth: 0.5,           // Spessore minimo del tratto (più sottile)
+                maxWidth: 1.5,           // Spessore massimo del tratto
+            });
 
-            function resizeCanvas() { /* ... (logica di resize) ... */ }
+            // Funzione CORRETTA per gestire la precisione su schermi HiDPI
+            function resizeCanvas() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear(); // Important to clear the signature after scaling
+            }
+
+            // Aggiungiamo un contenitore al canvas per definire le proporzioni
+            const padContainer = document.getElementById('signature-pad-container');
+            padContainer.style.height = `${padContainer.offsetWidth * 0.5}px`; // Aspect ratio 2:1
+
             window.addEventListener("resize", resizeCanvas);
-            resizeCanvas();
+            resizeCanvas(); // Esegui subito per la precisione
 
             function toggleSaveButton() { saveButton.disabled = !consentCheckbox.checked; }
             consentCheckbox.addEventListener('change', toggleSaveButton);
@@ -151,7 +162,7 @@
                 
                 html2canvas(document.body, { useCORS: true, scale: 1 }).then(canvas => {
                     const screenshotData = canvas.toDataURL('image/jpeg', 0.7);
-                    const signatureData = signaturePad.toDataURL('image/png');
+                    const signatureData = signaturePad.toDataURL('image/png'); // Esportazione in PNG trasparente
 
                     messageDiv.textContent = 'Invio e elaborazione in corso...';
                     
@@ -162,19 +173,16 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
-                            onSuccess(data.message);
-                        } else {
-                            onFailure({ message: data.message });
-                        }
+                        if (data.success) { onSuccess(data.message); } 
+                        else { onFailure({ message: data.message }); }
                     })
                     .catch(error => onFailure(error));
                 });
             });
 
-            function onSuccess(response) { /* ... (logica di successo) ... */ }
-            function onFailure(error) { /* ... (logica di errore) ... */ }
-            function setLoadingState(isLoading, messageText = '') { /* ... (logica di stato) ... */ }
+            function onSuccess(response) { /* ... */ }
+            function onFailure(error) { /* ... */ }
+            function setLoadingState(isLoading, messageText = '') { /* ... */ }
         }
     </script>
 </body>
