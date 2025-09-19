@@ -143,7 +143,7 @@
 
             // Aggiungiamo un contenitore al canvas per definire le proporzioni
             const padContainer = document.getElementById('signature-pad-container');
-            padContainer.style.height = `${padContainer.offsetWidth * 0.5}px`; // Aspect ratio 2:1
+            padContainer.style.height = `${padContainer.offsetWidth * 0.3}px`; // Aspect ratio ~3.3:1
 
             window.addEventListener("resize", resizeCanvas);
             resizeCanvas(); // Esegui subito per la precisione
@@ -187,3 +187,4 @@
     </script>
 </body>
 </html>
+
