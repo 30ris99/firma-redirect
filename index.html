@@ -2,227 +2,196 @@
 <html lang="it">
 <head>
     <base target="_top">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firma Documenti</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2c3e50; 
-            --primary-hover: #34495e; 
+            --primary-color: #2c3e50;
+            --primary-hover: #34495e;
             --secondary-color: #95a5a6;
-            --success-color: #27ae60; 
-            --danger-color: #c0392b; 
+            --success-color: #27ae60;
+            --danger-color: #c0392b;
             --background-color: #ecf0f1;
-            --container-bg-color: #ffffff; 
-            --text-color-dark: #34495e; 
+            --container-bg-color: #ffffff;
+            --text-color-dark: #34495e;
             --text-color-light: #7f8c8d;
-            --border-color: #bdc3c7; 
-            --font-headings: 'Montserrat', sans-serif; 
+            --border-color: #bdc3c7;
+            --font-headings: 'Montserrat', sans-serif;
             --font-body: 'Roboto', sans-serif;
         }
-        
-        body { 
-            font-family: var(--font-body); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 25px 15px; 
-            background-color: var(--background-color); 
-            margin: 0; 
-            min-height: 100vh; 
-            box-sizing: border-box; 
+        body {
+            font-family: var(--font-body);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px 15px;
+            background-color: var(--background-color);
+            margin: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
-        
-        #page-header { 
-            width: 100%; 
-            max-width: 500px; 
-            text-align: center; 
-            margin-bottom: 25px; 
-            padding-bottom: 15px; 
-            border-bottom: 1px solid var(--border-color); 
+        #page-header {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
         }
-        
-        #page-header h1 { 
-            font-family: var(--font-headings); 
-            font-weight: 600; 
-            font-size: 1.4em; 
-            margin: 0 0 5px 0; 
-            color: var(--text-color-dark); 
+        #page-header h1 {
+            font-family: var(--font-headings);
+            font-weight: 600;
+            font-size: 1.4em;
+            margin: 0 0 5px 0;
+            color: var(--text-color-dark);
         }
-        
-        #page-header p { 
-            margin: 3px 0; 
-            font-size: 0.95em; 
-            color: var(--text-color-light); 
-            line-height: 1.4; 
+        #page-header p {
+            margin: 3px 0;
+            font-size: 0.95em;
+            color: var(--text-color-light);
+            line-height: 1.4;
         }
-        
-        #container { 
-            background: var(--container-bg-color); 
-            padding: 30px; 
-            border-radius: 8px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
-            width: 100%; 
-            max-width: 500px; 
+        #container {
+            background: var(--container-bg-color);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 500px;
         }
-        
-        #container h3 { 
-            font-family: var(--font-headings); 
-            font-weight: 500; 
-            font-size: 1.2em; 
-            text-align: center; 
-            margin-top: 0; 
-            margin-bottom: 25px; 
-            color: var(--text-color-dark); 
+        #container h3 {
+            font-family: var(--font-headings);
+            font-weight: 500;
+            font-size: 1.2em;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--text-color-dark);
         }
-        
-        #doc-list-container h4 { 
-            font-family: var(--font-body); 
-            font-weight: 500; 
-            margin-top: 0; 
-            margin-bottom: 10px; 
-            font-size: 1em; 
-            color: var(--text-color-dark); 
+        #doc-list-container h4 {
+            font-weight: 500;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1em;
+            color: var(--text-color-dark);
         }
-        
-        #doc-list { 
-            list-style: none; 
-            padding-left: 0; 
-            margin: 0; 
-            max-height: 150px; 
-            overflow-y: auto; 
-            border: 1px solid #ecf0f1; 
-            border-radius: 4px; 
-            padding: 10px; 
+        #doc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ecf0f1;
+            border-radius: 4px;
+            padding: 10px;
         }
-        
-        #doc-list li { 
-            padding: 10px 8px; 
-            border-bottom: 1px solid #ecf0f1; 
-            font-size: 0.9em; 
-            display: flex; 
-            align-items: center; 
+        #doc-list li {
+            padding: 10px 8px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
         }
-        
-        #doc-list li:last-child { 
-            border-bottom: none; 
+        #doc-list li:last-child {
+            border-bottom: none;
         }
-        
-        #doc-list a { 
-            text-decoration: none; 
-            color: var(--primary-color); 
-            font-weight: 500; 
-            transition: color 0.2s; 
+        #doc-list a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            transition: color 0.2s;
         }
-        
-        #doc-list a:hover { 
-            color: #000; 
+        #doc-list a:hover {
+            color: #000;
         }
-        
-        #doc-list li::before { 
-            content: '📄'; 
-            margin-right: 10px; 
-            font-size: 1.1em; 
+        #doc-list li::before {
+            content: '📄';
+            margin-right: 10px;
+            font-size: 1.1em;
         }
-        
-        .no-docs { 
-            color: var(--text-color-light); 
-            font-style: italic; 
+        .no-docs {
+            color: var(--text-color-light);
+            font-style: italic;
         }
-        
-        #signature-pad-container { 
-            width: 100%; 
-            border: 2px dashed var(--border-color); 
-            border-radius: 4px; 
-            margin: 25px 0; 
-            touch-action: none; 
-            position: relative; 
+        #signature-pad-container {
+            width: 100%;
+            border: 2px dashed var(--border-color);
+            border-radius: 4px;
+            margin: 25px 0;
+            touch-action: none;
+            position: relative;
         }
-        
-        #signature-pad { 
-            display: block; 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
+        #signature-pad {
+            display: block;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
         }
-        
-        #consent-container { 
-            margin-bottom: 25px; 
+        #consent-container {
+            margin-bottom: 25px;
         }
-        
-        #consent-container label { 
-            font-size: 0.8em; 
-            line-height: 1.5; 
-            color: var(--text-color-light); 
-            display: flex; 
-            align-items: flex-start; 
-            cursor: pointer; 
+        #consent-container label {
+            font-size: 0.8em;
+            line-height: 1.5;
+            color: var(--text-color-light);
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
         }
-        
-        #consent-container input[type="checkbox"] { 
-            margin-right: 12px; 
-            margin-top: 3px; 
-            flex-shrink: 0; 
-            width: 1.1em; 
-            height: 1.1em; 
-            accent-color: var(--primary-color); 
+        #consent-container input[type="checkbox"] {
+            margin-right: 12px;
+            margin-top: 3px;
+            width: 1.1em;
+            height: 1.1em;
+            accent-color: var(--primary-color);
         }
-        
-        .buttons { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
-        
-        button { 
-            padding: 14px; 
-            font-size: 1em; 
-            font-family: var(--font-headings); 
-            font-weight: 500; 
-            cursor: pointer; 
-            border-radius: 4px; 
-            border: none; 
-            transition: all 0.2s ease; 
+        button {
+            padding: 14px;
+            font-size: 1em;
+            font-family: var(--font-headings);
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            transition: all 0.2s ease;
         }
-        
-        button:disabled { 
-            background-color: var(--secondary-color) !important; 
-            cursor: not-allowed; 
-            opacity: 0.6; 
+        button:disabled {
+            background-color: var(--secondary-color) !important;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
-        
-        #save-button { 
-            background-color: var(--primary-color); 
-            color: white; 
+        #clear-button {
+            background-color: #7f8c8d;
+            color: white;
         }
-        
-        #save-button:hover:not(:disabled) { 
-            background-color: var(--primary-hover); 
+        #clear-button:hover:not(:disabled) {
+            background-color: #6c7b7d;
         }
-        
-        #clear-button { 
-            background-color: #7f8c8d; 
-            color: white; 
+        #save-button {
+            background-color: var(--primary-color);
+            color: white;
         }
-        
-        #clear-button:hover:not(:disabled) { 
-            background-color: #6c7b7d; 
+        #save-button:hover:not(:disabled) {
+            background-color: var(--primary-hover);
         }
-        
-        #message { 
-            margin-top: 25px; 
-            font-weight: 500; 
-            text-align: center; 
-            min-height: 2.5em; 
-            white-space: pre-wrap; 
-            transition: all 0.3s; 
-            font-size: 0.95em; 
+        #message {
+            margin-top: 25px;
+            font-weight: 500;
+            text-align: center;
+            min-height: 2.5em;
+            white-space: pre-wrap;
+            transition: all 0.3s;
+            font-size: 0.95em;
         }
     </style>
 </head>
@@ -235,31 +204,23 @@
     <div id="container">
         <p style="text-align:center;">Caricamento dei documenti in corso...</p>
     </div>
-    
     <script>
-        // =================================================================================
-        // --- CONFIGURAZIONE: URL /exec della Web App su Apps Script ---
-        const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbynsyscSQBRpgpNIoDzQEYRvopxXfvWigltbq3X_EPckPuDjdmpe7lFpvggiZ_KWn5b/exec";
-        // =================================================================================
-        
+        const WEB_APP_API_URL = "https://script.google.com/macros/s/AKfycbycFomWO0AHO-M10fMTgutsAO7fkSpH5CcQVcpsG2uGH8hbUb6jNOc94_G8pnixst75/exec";
         const container = document.getElementById('container');
         const params = new URLSearchParams(window.location.search);
         const folderId = params.get('folderId');
-        
+
         let filesToProcess = [];
         let processedFiles = [];
         let signaturePadInstance;
-        
-        // Al caricamento della pagina
+
         window.addEventListener('load', () => {
             if (!folderId) {
                 renderError('Link non valido: ID della cartella non specificato.');
                 return;
             }
-            
-            // Richiesta GET per ottenere la lista dei documenti
             fetch(`${WEB_APP_API_URL}?folderId=${folderId}`)
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
                     if (data.success) {
                         filesToProcess = data.documents;
@@ -268,38 +229,28 @@
                         renderError(data.message);
                     }
                 })
-                .catch(error => renderError('Impossibile comunicare con il server di firma.'));
+                .catch(() => renderError('Impossibile comunicare con il server di firma.'));
         });
-        
-        function renderError(message) {
-            container.innerHTML = `<h3 style="color: var(--danger-color);">Errore</h3><p>${message}</p>`;
+
+        function renderError(msg) {
+            container.innerHTML = `<h3 style="color: var(--danger-color);">Errore</h3><p>${msg}</p>`;
         }
-        
-        function renderSigningInterface(documents) {
-            let docListHtml = '';
-            
-            if (documents && documents.length > 0) {
-                documents.forEach(doc => {
-                    docListHtml += `<li><a href="${doc.url}" target="_blank" rel="noopener noreferrer">${doc.name}</a></li>`;
-                });
-            } else {
-                docListHtml = '<li class="no-docs">Nessun documento trovato.</li>';
-            }
-            
+
+        function renderSigningInterface(docs) {
+            let html = docs.length
+                ? docs.map(d => `<li><a href="${d.url}" target="_blank">${d.name}</a></li>`).join('')
+                : '<li class="no-docs">Nessun documento trovato.</li>';
             container.innerHTML = `
                 <h3>Revisione e Firma Documenti</h3>
                 <div id="doc-list-container">
-                    <h4>Clicca per visualizzare i documenti da firmare:</h4>
-                    <ul id="doc-list">${docListHtml}</ul>
+                    <h4>Documenti:</h4>
+                    <ul id="doc-list">${html}</ul>
                 </div>
-                <p style="text-align:center; font-size:0.9em; color:#666;">Disegna la tua firma nel riquadro sottostante:</p>
-                <div id="signature-pad-container">
-                    <canvas id="signature-pad"></canvas>
-                </div>
+                <p style="text-align:center; color:#666;">Disegna la tua firma:</p>
+                <div id="signature-pad-container"><canvas id="signature-pad"></canvas></div>
                 <div id="consent-container">
-                    <label>
-                        <input type="checkbox" id="consent-checkbox">
-                        <span>Dichiaro di aver preso visione dei documenti sopra elencati e di approvarne il contenuto. Comprendo che apporre la mia firma tramite questo strumento costituisce una manifestazione di volontà con efficacia giuridica ai sensi delle normative vigenti in materia di firma elettronica.</span>
+                    <label><input type="checkbox" id="consent-checkbox">
+                    <span>Confermo di approvare i documenti e comprendo che questa firma ha valore legale.</span>
                     </label>
                 </div>
                 <div class="buttons">
@@ -308,173 +259,106 @@
                 </div>
                 <div id="message"></div>
             `;
-            
             initializeSigningPad();
         }
-        
+
         function initializeSigningPad() {
             const canvas = document.getElementById('signature-pad');
-            const saveButton = document.getElementById('save-button');
-            const clearButton = document.getElementById('clear-button');
-            const consentCheckbox = document.getElementById('consent-checkbox');
-            const messageDiv = document.getElementById('message');
-            
-            // Inizializzazione SignaturePad
-            signaturePadInstance = new SignaturePad(canvas, {
-                penColor: 'rgb(0, 0, 0)',
-                minWidth: 0.5,
-                maxWidth: 1.5,
-            });
-            
-            // Funzione per ridimensionare il canvas
-            function resizeCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
+            const saveBtn = document.getElementById('save-button');
+            const clearBtn = document.getElementById('clear-button');
+            const consent = document.getElementById('consent-checkbox');
+
+            signaturePadInstance = new SignaturePad(canvas, { penColor: 'black', minWidth:0.5, maxWidth:1.5 });
+
+            function resize() {
+                const ratio = Math.max(window.devicePixelRatio||1,1);
+                canvas.width = canvas.offsetWidth*ratio;
+                canvas.height = canvas.offsetHeight*ratio;
+                canvas.getContext('2d').scale(ratio,ratio);
                 signaturePadInstance.clear();
             }
-            
-            // Imposta altezza del contenitore
-            const padContainer = document.getElementById('signature-pad-container');
-            padContainer.style.height = `${padContainer.offsetWidth * 0.3}px`;
-            
-            window.addEventListener("resize", resizeCanvas);
-            resizeCanvas();
-            
-            // Funzione per abilitare/disabilitare il pulsante salva
-            function toggleSaveButton() {
-                saveButton.disabled = !consentCheckbox.checked;
-            }
-            
-            // Event listeners
-            consentCheckbox.addEventListener('change', toggleSaveButton);
-            clearButton.addEventListener('click', () => signaturePadInstance.clear());
-            toggleSaveButton();
-            
-            saveButton.addEventListener('click', () => {
+            window.addEventListener('resize', resize);
+            resize();
+
+            consent.addEventListener('change', () => saveBtn.disabled = !consent.checked);
+            clearBtn.addEventListener('click', () => signaturePadInstance.clear());
+            saveBtn.disabled = true;
+
+            saveBtn.addEventListener('click', () => {
                 if (signaturePadInstance.isEmpty()) {
-                    alert("Per favore, disegna prima la tua firma.");
+                    alert('Disegna la firma prima.');
                     return;
                 }
-                
-                setLoadingState(true, 'Avvio del processo di firma...');
-                const signatureData = signaturePadInstance.toDataURL('image/png');
+                setLoading(true, 'Avvio firma...');
+                const sigData = signaturePadInstance.toDataURL();
                 processedFiles = [];
-                processNextFile(0, signatureData);
+                processNext(0, sigData);
             });
         }
-        
-        function processNextFile(index, signatureData) {
-            const messageDiv = document.getElementById('message');
-            
-            if (index >= filesToProcess.length) {
-                finalizeProcess(signatureData);
+
+        function processNext(i, sigData) {
+            const msg = document.getElementById('message');
+            if (i >= filesToProcess.length) {
+                finalize(sigData);
                 return;
             }
-            
-            const file = filesToProcess[index];
-            messageDiv.textContent = `Processando file ${index + 1} di ${filesToProcess.length}: ${file.name}...`;
-            
-            // Preparazione dati POST usando URLSearchParams (compatibile con Apps Script)
-            const formData = new URLSearchParams();
-            formData.append('action', 'processFile');
-            formData.append('signatureData', signatureData);
-            formData.append('fileId', file.id);
-            formData.append('folderId', folderId);
-            
-            fetch(WEB_APP_API_URL, { 
-                method: 'POST', 
-                body: formData 
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.data.status === 'success') {
-                    processedFiles.push(data.data.fileName);
-                }
-                // Processa il prossimo file
-                processNextFile(index + 1, signatureData);
-            })
-            .catch(error => onFailure(error));
+            const file = filesToProcess[i];
+            msg.textContent = `Firmando ${i+1}/${filesToProcess.length}: ${file.name}`;
+            const fd = new URLSearchParams();
+            fd.append('action','processFile');
+            fd.append('signatureData', sigData);
+            fd.append('fileId', file.id);
+            fd.append('folderId', folderId);
+
+            fetch(WEB_APP_API_URL, { method:'POST', body:fd })
+                .then(r => r.json())
+                .then(() => processNext(i+1, sigData))
+                .catch(e => showError(e));
         }
-        
-        function finalizeProcess(signatureData) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = 'Finalizzazione in corso... Salvataggio della prova di firma.';
-            
-            // Cattura screenshot della pagina
-            html2canvas(document.body, { useCORS: true, scale: 1 }).then(canvas => {
-                const screenshotData = canvas.toDataURL('image/jpeg', 0.7);
-                
-                // Preparazione dati POST per salvataggio prova
-                const formData = new URLSearchParams();
-                formData.append('action', 'saveProof');
-                formData.append('screenshotData', screenshotData);
-                formData.append('folderId', folderId);
-                formData.append('signedFileNames', processedFiles.join(','));
-                
-                fetch(WEB_APP_API_URL, { 
-                    method: 'POST', 
-                    body: formData 
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const finalMsg = `Processo completato! ${processedFiles.length} file firmati. I documenti si trovano nella cartella "${data.data.destinationFolderName}".`;
-                        onSuccess(finalMsg);
-                    } else { 
-                        onFailure({ message: data.message }); 
-                    }
-                })
-                .catch(error => onFailure(error));
+
+        function finalize(sigData) {
+            const msg = document.getElementById('message');
+            msg.textContent = 'Salvataggio prova in corso...';
+            html2canvas(document.body, { useCORS:true, scale:1 }).then(canvas => {
+                const img = canvas.toDataURL('image/jpeg',0.7);
+                const fd = new URLSearchParams();
+                fd.append('action','saveProof');
+                fd.append('screenshotData', img);
+                fd.append('folderId', folderId);
+                fd.append('signedFileNames', processedFiles.join(','));
+
+                fetch(WEB_APP_API_URL, { method:'POST', body:fd })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSuccess(`Completato! Cartella: ${data.data.destinationFolderName}`);
+                        } else {
+                            showError(data.message);
+                        }
+                    }).catch(e => showError(e));
             });
         }
-        
-        function onSuccess(response) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = response;
-            messageDiv.style.color = 'var(--success-color)';
-            
-            // Disabilita SignaturePad
-            if(signaturePadInstance) signaturePadInstance.off();
-            setLoadingState(false);
+
+        function setLoading(isLoading, text='') {
+            document.getElementById('message').textContent = text;
+            document.getElementById('clear-button').disabled = isLoading;
+            document.getElementById('save-button').disabled = isLoading;
+            document.getElementById('consent-checkbox').disabled = isLoading;
+            if (isLoading) signaturePadInstance.off();
+            else signaturePadInstance.on();
         }
-        
-        function onFailure(error) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.textContent = "Errore: " + (error.message || error);
-            messageDiv.style.color = 'var(--danger-color)';
-            setLoadingState(false);
+
+        function showSuccess(txt) {
+            const msg = document.getElementById('message');
+            msg.textContent = txt;
+            msg.style.color = 'var(--success-color)';
         }
-        
-        function setLoadingState(isLoading, messageText = '') {
-            const messageDiv = document.getElementById('message');
-            const saveButton = document.getElementById('save-button');
-            const clearButton = document.getElementById('clear-button');
-            const consentCheckbox = document.getElementById('consent-checkbox');
-            
-            if(messageText) messageDiv.textContent = messageText;
-            
-            if(saveButton) saveButton.disabled = isLoading;
-            if(clearButton) clearButton.disabled = isLoading;
-            if(consentCheckbox) consentCheckbox.disabled = isLoading;
-            
-            if(isLoading) { 
-                if(signaturePadInstance) signaturePadInstance.off(); 
-            } else { 
-                if(signaturePadInstance) signaturePadInstance.on(); 
-                toggleSaveButton(); 
-            }
-        }
-        
-        function toggleSaveButton() {
-            const saveButton = document.getElementById('save-button');
-            const consentCheckbox = document.getElementById('consent-checkbox');
-            if(saveButton && consentCheckbox) {
-                saveButton.disabled = !consentCheckbox.checked;
-            }
+        function showError(err) {
+            const msg = document.getElementById('message');
+            msg.textContent = 'Errore: ' + (err.message||err);
+            msg.style.color = 'var(--danger-color)';
+            setLoading(false);
         }
     </script>
 </body>
 </html>
-
