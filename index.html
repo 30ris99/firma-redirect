@@ -80,7 +80,7 @@
         }
         #doc-list {
             list-style: none;
-            padding-left: 0;
+            padding: 0;
             margin: 0;
             max-height: 150px;
             overflow-y: auto;
@@ -250,7 +250,7 @@
                 <div id="signature-pad-container"><canvas id="signature-pad"></canvas></div>
                 <div id="consent-container">
                     <label><input type="checkbox" id="consent-checkbox">
-                    <span>Confermo di approvare i documenti e comprendo che questa firma ha valore legale.</span>
+                    <span>«Dichiaro di aver preso completa visione dei documenti sopra elencati, di approvarne integralmente il contenuto e di esprimere il mio pieno consenso. Comprendo che la sottoscrizione elettronica apposta con il presente strumento ha valore legale equivalente alla firma autografa ai sensi del D.Lgs. n. 82/2005 (c.d. CAD) e del Regolamento (UE) n. 910/2014 (eIDAS). Accetto che il sistema registri e conservi prova informatica dell’operazione di firma, incluso riconoscimento della mia identità e data/ora dell’apposizione, con efficacia probatoria in giudizio.»</span>
                     </label>
                 </div>
                 <div class="buttons">
@@ -279,7 +279,6 @@
                 signaturePadInstance.clear();
             }
 
-            // Imposta altezza del contenitore al 30% della larghezza
             padContainer.style.height = padContainer.offsetWidth * 0.3 + 'px';
 
             window.addEventListener('resize', () => {
