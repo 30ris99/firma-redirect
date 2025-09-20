@@ -267,18 +267,27 @@
             const saveBtn = document.getElementById('save-button');
             const clearBtn = document.getElementById('clear-button');
             const consent = document.getElementById('consent-checkbox');
+            const padContainer = document.getElementById('signature-pad-container');
 
             signaturePadInstance = new SignaturePad(canvas, { penColor: 'black', minWidth:0.5, maxWidth:1.5 });
 
-            function resize() {
+            function resizeCanvas() {
                 const ratio = Math.max(window.devicePixelRatio||1,1);
-                canvas.width = canvas.offsetWidth*ratio;
-                canvas.height = canvas.offsetHeight*ratio;
-                canvas.getContext('2d').scale(ratio,ratio);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
                 signaturePadInstance.clear();
             }
-            window.addEventListener('resize', resize);
-            resize();
+
+            // Imposta altezza del contenitore al 30% della larghezza
+            padContainer.style.height = padContainer.offsetWidth * 0.3 + 'px';
+
+            window.addEventListener('resize', () => {
+                padContainer.style.height = padContainer.offsetWidth * 0.3 + 'px';
+                resizeCanvas();
+            });
+
+            resizeCanvas();
 
             consent.addEventListener('change', () => saveBtn.disabled = !consent.checked);
             clearBtn.addEventListener('click', () => signaturePadInstance.clear());
