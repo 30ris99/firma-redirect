@@ -259,7 +259,9 @@
                 </div>
                 <div id="message"></div>
             `;
-            initializeSigningPad();
+            if (docs.length > 0) {
+                initializeSigningPad();
+            }
         }
 
         function initializeSigningPad() {
@@ -280,12 +282,10 @@
             }
 
             padContainer.style.height = padContainer.offsetWidth * 0.3 + 'px';
-
             window.addEventListener('resize', () => {
                 padContainer.style.height = padContainer.offsetWidth * 0.3 + 'px';
                 resizeCanvas();
             });
-
             resizeCanvas();
 
             consent.addEventListener('change', () => saveBtn.disabled = !consent.checked);
@@ -294,12 +294,12 @@
 
             saveBtn.addEventListener('click', () => {
                 if (signaturePadInstance.isEmpty()) {
-                    alert('Disegna la firma prima.');
+                    alert('È necessario apporre la firma prima di procedere.');
                     return;
                 }
-                setLoading(true, 'Avvio firma...');
+                setLoading(true, 'Avvio processo di firma...');
                 const sigData = signaturePadInstance.toDataURL();
-                processedFiles = [];
+                processedFiles = []; // Resetta l'array prima di iniziare
                 processNext(0, sigData);
             });
         }
@@ -312,6 +312,7 @@
             }
             const file = filesToProcess[i];
             msg.textContent = `Firmando ${i+1}/${filesToProcess.length}: ${file.name}`;
+            
             const fd = new URLSearchParams();
             fd.append('action','processFile');
             fd.append('signatureData', sigData);
@@ -320,26 +321,39 @@
 
             fetch(WEB_APP_API_URL, { method:'POST', body:fd })
                 .then(r => r.json())
-                .then(() => processNext(i+1, sigData))
+                .then(result => {
+                    // **FIX**: Popola l'array dei file processati
+                    if (result.success && result.data.status === 'success') {
+                        processedFiles.push(result.data.fileName);
+                    } else if (result.success && result.data.status === 'skipped') {
+                        console.log(`File saltato: ${result.data.fileName} - Motivo: ${result.data.reason}`);
+                    }
+                    // Continua con il file successivo
+                    processNext(i + 1, sigData);
+                })
                 .catch(e => showError(e));
         }
 
         function finalize(sigData) {
             const msg = document.getElementById('message');
-            msg.textContent = 'Salvataggio prova in corso...';
+            msg.textContent = 'Finalizzazione e salvataggio della prova in corso...';
             html2canvas(document.body, { useCORS:true, scale:1 }).then(canvas => {
                 const img = canvas.toDataURL('image/jpeg',0.7);
                 const fd = new URLSearchParams();
                 fd.append('action','saveProof');
                 fd.append('screenshotData', img);
                 fd.append('folderId', folderId);
+                // **FIX**: Invia i nomi dei file effettivamente firmati
                 fd.append('signedFileNames', processedFiles.join(','));
 
                 fetch(WEB_APP_API_URL, { method:'POST', body:fd })
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {
-                            showSuccess(`Completato! Cartella: ${data.data.destinationFolderName}`);
+                            showSuccess(`Processo completato con successo! I documenti firmati sono nella cartella: "${data.data.destinationFolderName}"`);
+                            setLoading(false); // Riabilita i pulsanti
+                            document.getElementById('save-button').style.display = 'none'; // Nasconde il pulsante firma
+                            document.getElementById('clear-button').style.display = 'none'; // Nasconde il pulsante pulisci
                         } else {
                             showError(data.message);
                         }
@@ -349,11 +363,17 @@
 
         function setLoading(isLoading, text='') {
             document.getElementById('message').textContent = text;
-            document.getElementById('clear-button').disabled = isLoading;
-            document.getElementById('save-button').disabled = isLoading;
+            const buttons = document.querySelectorAll('.buttons button');
+            buttons.forEach(b => b.disabled = isLoading);
             document.getElementById('consent-checkbox').disabled = isLoading;
-            if (isLoading) signaturePadInstance.off();
-            else signaturePadInstance.on();
+            
+            if (signaturePadInstance) {
+                if (isLoading) {
+                    signaturePadInstance.off();
+                } else {
+                    signaturePadInstance.on();
+                }
+            }
         }
 
         function showSuccess(txt) {
@@ -361,14 +381,13 @@
             msg.textContent = txt;
             msg.style.color = 'var(--success-color)';
         }
+
         function showError(err) {
             const msg = document.getElementById('message');
-            msg.textContent = 'Errore: ' + (err.message||err);
+            msg.textContent = 'Errore: ' + (err.message || err);
             msg.style.color = 'var(--danger-color)';
-            setLoading(false);
+            setLoading(false); // Sblocca l'interfaccia in caso di errore
         }
     </script>
 </body>
 </html>
-
-
